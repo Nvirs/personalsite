@@ -1,4 +1,17 @@
 
+// Loading Screen Handler
+window.addEventListener('load', function() {
+    const loadingScreen = document.querySelector('.loading-screen');
+    
+    // Simulate loading time (you can remove this setTimeout if you want it to load instantly)
+    setTimeout(() => {
+        loadingScreen.classList.add('fade-out');
+        setTimeout(() => {
+            loadingScreen.style.display = 'none';
+        }, 500);
+    }, 2000); // 2 seconds loading time
+});
+
 document.addEventListener('DOMContentLoaded', function() {
    
     const spaceObjects = [];

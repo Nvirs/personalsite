@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Your Name - Portfolio</title>
+    <title>Nvirs</title>
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -13,6 +13,17 @@
     <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.waves.min.js"></script>
 </head>
 <body>
+    <!-- Loading Screen -->
+    <div class="loading-screen">
+        <div class="loader">
+            <svg class="logo-svg" width="100" height="100" viewBox="0 0 100 100">
+                <circle class="logo-circle" cx="50" cy="50" r="45" fill="none" stroke="currentColor"/>
+                <path class="logo-text" d="M30 50 L45 65 L70 35" stroke="currentColor" fill="none"/>
+            </svg>
+            <div class="loading-text">Loading<span class="dots">...</span></div>
+        </div>
+    </div>
+
     <!-- Interactive Space Background -->
     <div id="vanta-bg"></div>
     <div class="space-overlay"></div>
@@ -21,6 +32,10 @@
     <nav class="navbar">
         <div class="nav-container">
             <div class="nav-logo">
+                <svg class="nav-logo-svg" width="30" height="30" viewBox="0 0 100 100">
+                    <circle class="nav-logo-circle" cx="50" cy="50" r="45" fill="none" stroke="currentColor"/>
+                    <path class="nav-logo-text" d="M30 50 L45 65 L70 35" stroke="currentColor" fill="none"/>
+                </svg>
                 <span class="logo-text">Nvirs</span>
             </div>
             <ul class="nav-menu">
@@ -162,16 +177,16 @@
                 </div>
                 <div class="about-stats">
                     <div class="stat-item">
-                        <div class="stat-number">50+</div>
+                        <div class="stat-number">5+</div>
                         <div class="stat-label">Projects Completed</div>
                     </div>
                     <div class="stat-item">
-                        <div class="stat-number">5+</div>
-                        <div class="stat-label">Years Experience</div>
+                        <div class="stat-number">2</div>
+                        <div class="stat-label">Years of Study</div>
                     </div>
                     <div class="stat-item">
                         <div class="stat-number">100%</div>
-                        <div class="stat-label">Client Satisfaction</div>
+                        <div class="stat-label">Learning</div>
                     </div>
                 </div>
             </div>
