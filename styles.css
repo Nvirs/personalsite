@@ -1,3 +1,104 @@
+/* Loading Screen */
+.loading-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #0a0a1f;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    transition: opacity 0.5s ease-out, visibility 0.5s ease-out;
+}
+
+.loading-screen.fade-out {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.loader {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+}
+
+.logo-svg {
+    width: 100px;
+    height: 100px;
+    color: var(--primary-color);
+    animation: logoAnimation 2s ease-in-out infinite;
+}
+
+.logo-circle {
+    stroke-width: 3;
+    stroke-dasharray: 283;
+    stroke-dashoffset: 283;
+    animation: drawCircle 2s ease-in-out forwards, glowEffect 2s ease-in-out infinite;
+}
+
+.logo-text {
+    stroke-width: 3;
+    stroke-dasharray: 100;
+    stroke-dashoffset: 100;
+    animation: drawText 2s ease-in-out forwards 0.5s;
+}
+
+.loading-text {
+    font-size: 1.2rem;
+    color: var(--text-primary);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+}
+
+.dots {
+    animation: dots 1.5s infinite;
+}
+/* Módosíthatod a logó animációt */
+@keyframes logoAnimation {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+@keyframes drawCircle {
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+
+@keyframes drawText {
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+/* Módosíthatod a fényhatást */
+@keyframes glowEffect {
+    0%, 100% {
+        filter: drop-shadow(0 0 5px var(--primary-color));
+    }
+    50% {
+        filter: drop-shadow(0 0 20px var(--primary-color));
+    }
+}
+
+@keyframes dots {
+    0%, 20% {
+        content: ".";
+    }
+    40% {
+        content: "..";
+    }
+    60%, 100% {
+        content: "...";
+    }
+}
+
 /* Reset and Base Styles */
 * {
     margin: 0;
@@ -313,6 +414,26 @@ section {
     height: 70px;
 }
 
+.nav-logo {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.nav-logo-svg {
+    color: var(--primary-color);
+    animation: navLogoGlow 2s ease-in-out infinite;
+}
+
+.nav-logo-circle {
+    stroke-width: 3;
+    animation: navLogoRotate 10s linear infinite;
+}
+
+.nav-logo-text {
+    stroke-width: 3;
+}
+
 .nav-logo .logo-text {
     font-size: 1.5rem;
     font-weight: 700;
@@ -320,6 +441,24 @@ section {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+}
+
+@keyframes navLogoGlow {
+    0%, 100% {
+        filter: drop-shadow(0 0 2px var(--primary-color));
+    }
+    50% {
+        filter: drop-shadow(0 0 8px var(--primary-color));
+    }
+}
+
+@keyframes navLogoRotate {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .nav-menu {
