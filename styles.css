@@ -941,9 +941,15 @@ section {
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border: 2px solid rgba(255, 255, 255, 0.2);
-    font-size: 4rem;
-    color: rgba(255, 255, 255, 0.8);
+    overflow: hidden;
     animation: pulse 2s ease-in-out infinite;
+}
+
+.profile-photo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
 }
 
 .image-glow {
