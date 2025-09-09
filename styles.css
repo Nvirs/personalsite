@@ -1539,6 +1539,17 @@ section {
     transform: scale(1.1);
 }
 
+.contact-method a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.contact-method a:hover {
+    color: var(--primary-color);
+    text-decoration: none;
+}
+
 .social-links {
     display: flex;
     gap: 2rem;
