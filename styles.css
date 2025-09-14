@@ -116,9 +116,14 @@ body {
     line-height: 1.6;
     color: #fff;
     background: radial-gradient(ellipse at center, #1a1a2e 0%, #16213e 25%, #0f0f23 50%, #000000 100%);
+    background-attachment: fixed;
     overflow-x: hidden;
     position: relative;
     min-height: 100vh;
+    margin: 0;
+    padding: 0;
+    border: none;
+    outline: none;
     
 }
 
@@ -1671,14 +1676,14 @@ section {
 
 /* Footer */
 .footer {
-    background: rgba(10, 10, 31, 0.8);
+    background: transparent;
     color: white;
     text-align: center;
     padding: 2rem 0;
     position: relative;
-    backdrop-filter: blur(10px);
-    border-top: 1px solid rgba(99, 102, 241, 0.2);
-    box-shadow: 0 -4px 30px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(5px);
+    border-top: 1px solid rgba(99, 102, 241, 0.3);
+    box-shadow: 0 -4px 30px rgba(0, 0, 0, 0.05);
 }
 
 .footer::before {
@@ -1710,9 +1715,9 @@ section {
     height: 2px;
     background: linear-gradient(90deg, 
         transparent,
-        rgba(99, 102, 241, 0.5),
-        rgba(99, 102, 241, 0.8),
-        rgba(99, 102, 241, 0.5),
+        rgba(99, 102, 241, 0.3),
+        rgba(99, 102, 241, 0.6),
+        rgba(99, 102, 241, 0.3),
         transparent
     );
     animation: footerGlow 3s ease-in-out infinite;
