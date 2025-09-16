@@ -15,8 +15,8 @@ window.addEventListener('load', function() {
 document.addEventListener('DOMContentLoaded', function() {
    
     const spaceObjects = [];
-    const STAR_COUNT = 200;
-    const PLANET_COUNT = 5;
+    const STAR_COUNT = 50;  // Reduced for cleaner UI
+    const PLANET_COUNT = 0;  // Restored to 5 planets
     
     // Star class
     class Star {
@@ -34,6 +34,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         draw(ctx) {
+            if (!ctx || !this.color) return;
+            
             ctx.beginPath();
             ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
             ctx.fillStyle = this.color;
@@ -45,7 +47,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 this.x, this.y, 0,
                 this.x, this.y, this.size * 4
             );
-            gradient.addColorStop(0, `hsla(${this.color}, ${this.opacity})`);
+            gradient.addColorStop(0, this.color);
             gradient.addColorStop(1, 'transparent');
             ctx.fillStyle = gradient;
             ctx.fill();
@@ -82,6 +84,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         draw(ctx) {
+            if (!ctx || !this.glowColor) return;
+            
             // Planet glow
             const gradient = ctx.createRadialGradient(
                 this.x, this.y, 0,
@@ -121,7 +125,15 @@ document.addEventListener('DOMContentLoaded', function() {
     
    
     const canvas = document.getElementById('vanta-bg');
+    if (!canvas) {
+        console.warn('Canvas element not found');
+        return;
+    }
     const ctx = canvas.getContext('2d');
+    if (!ctx) {
+        console.warn('Canvas context not available');
+        return;
+    }
     
     function resizeCanvas() {
         canvas.width = window.innerWidth;
@@ -163,95 +175,20 @@ document.addEventListener('DOMContentLoaded', function() {
         
         spaceBackgrounds.forEach(background => {
             const starsContainer = background.querySelector('.stars');
-            const meteorsContainer = background.querySelector('.meteors');
-            const floatingContainer = background.querySelector('.floating-objects');
-            
-    // Create stars
-    for (let i = 0; i < 50; i++) {
-        const star = document.createElement('div');
-        star.className = 'star';
-        const size = Math.random() * 2 + 1;
-        const delay = Math.random() * 3;
-        star.style.cssText = `
-            width: ${size}px;
-            height: ${size}px;
-            left: ${Math.random() * 100}%;
-            top: ${Math.random() * 100}%;
-            animation: twinkle ${Math.random() * 3 + 2}s infinite ease-in-out;
-            animation-delay: ${delay}s;
-            box-shadow: 0 0 ${size * 2}px rgba(255, 255, 255, 0.8);
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        `;
-        starsContainer.appendChild(star);
-        
-        
-        setTimeout(() => {
-            star.style.opacity = '1';
-        }, delay * 1000);
+            // meteorsContainer removed
+            // Safety check - only proceed if containers exist
+            if (!starsContainer) {
+                console.warn('Some space background containers not found');
+                return;
             }
+            
+    // Random stars removed for cleaner UI
             
    
-    for (let i = 0; i < 8; i++) {
-        const obj = document.createElement('div');
-        obj.className = 'floating-circle';
-        const size = Math.random() * 60 + 40;
-        const delay = Math.random() * 5;
-        obj.style.cssText = `
-            width: ${size}px;
-            height: ${size}px;
-            left: ${Math.random() * 100}%;
-            top: ${Math.random() * 100}%;
-            animation: float ${Math.random() * 15 + 20}s infinite ease-in-out;
-            animation-delay: ${delay}s;
-            opacity: 0;
-            transition: opacity 0.5s ease;
-        `;
-        floatingContainer.appendChild(obj);
-        
-     
-        setTimeout(() => {
-            obj.style.opacity = '1';
-        }, delay * 1000);
-            }
+    // All floating shapes removed for cleaner UI
             
 
-    function createMeteor() {
-        const meteor = document.createElement('div');
-        meteor.className = 'meteor';
-        const startX = Math.random() * 100;
-        
-        meteor.style.cssText = `
-            left: ${startX}%;
-            top: -5%;
-            opacity: 0;
-            transition: transform 2s linear, opacity 0.3s ease;
-        `;
-        
-        meteorsContainer.appendChild(meteor);
-        
-    
-        requestAnimationFrame(() => {
-            meteor.style.opacity = '1';
-            meteor.style.transform = `
-                translate(${Math.random() * 200 - 100}px, ${window.innerHeight + 100}px)
-                rotate(45deg)
-            `;
-        });
-        
-      
-        setTimeout(() => {
-            meteor.style.opacity = '0';
-            setTimeout(() => meteor.remove(), 300);
-        }, 1700);
-            }
-            
-            
-            setInterval(() => {
-                if (Math.random() < 0.2) {
-                    createMeteor();
-                }
-            }, 1500);
+    // Meteor shower removed for cleaner UI
         });
     }
     
@@ -259,22 +196,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeSpaceEffects();
     
     
-    window.addEventListener('scroll', function() {
-        const scrolled = window.pageYOffset || document.documentElement.scrollTop;
-        const bg = document.getElementById('vanta-bg');
-        if (bg) {
-    
-            bg.style.transform = `translateY(${scrolled * 0.2}px)`;
-        }
-        
-        
-        document.querySelectorAll('.section-space-bg').forEach(bg => {
-            const rect = bg.parentElement.getBoundingClientRect();
-            const speed = 0.1;
-            const yPos = (rect.top * speed);
-            bg.style.transform = `translateY(${yPos}px)`;
-        });
-    });
+    // Background scroll effects removed for consistent appearance
 
     
     window.addEventListener('resize', function() {
@@ -297,6 +219,16 @@ document.addEventListener('DOMContentLoaded', function() {
     
     let scrollSpeed = 0;
     let lastScrollTop = 0;
+    let mouseX = 0;
+    let mouseY = 0;
+    let vantaEffect = null;
+    let currentEffect = null;
+    
+    // Simple startEffect function to prevent errors
+    function startEffect(effect) {
+        // Placeholder function - can be expanded later if needed
+        console.log('Starting effect:', effect);
+    }
     
     
     document.addEventListener('mousemove', (e) => {
@@ -311,18 +243,7 @@ document.addEventListener('DOMContentLoaded', function() {
         lastScrollTop = st;
         
         
-        document.querySelectorAll('.parallax-layer').forEach(layer => {
-            const speed = parseFloat(layer.getAttribute('data-speed'));
-            const yPos = -(st * speed);
-            layer.style.transform = `translate3d(0, ${yPos}px, 0)`;
-        });
-        
-        // Update nebulas
-        document.querySelectorAll('.nebula').forEach((nebula, index) => {
-            const rotation = st * 0.02 * (index + 1);
-            const scale = 1 + Math.sin(st * 0.001) * 0.1;
-            nebula.style.transform = `rotate(${rotation}deg) scale(${scale})`;
-        });
+        // Parallax and nebula effects removed for consistent background
     });
     
     
@@ -365,88 +286,50 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     
-    const constellations = new Constellation(stars.slice(0, 50));
-    
-    
-    let animationFrameId;
-    let lastTime = 0;
-    const FPS = 60;
-    const frameDelay = 1000 / FPS;
-
-    function animate(currentTime) {
-        animationFrameId = requestAnimationFrame(animate);
-
-        
-        const deltaTime = currentTime - lastTime;
-        if (deltaTime < frameDelay) return;
-
-        
-        const width = canvas.width / (window.devicePixelRatio || 1);
-        const height = canvas.height / (window.devicePixelRatio || 1);
-        
-        ctx.fillStyle = 'rgba(10, 10, 31, 0.2)';
-        ctx.fillRect(0, 0, width, height);
-        
-        
-        stars.forEach(star => {
-            star.update(mouseX, mouseY, scrollSpeed);
-            star.draw();
-        });
-        
-        
-        if (constellations && typeof constellations.draw === 'function') {
-            constellations.draw();
-        }
-        
-        
-        scrollSpeed *= 0.95;
-        
-        lastTime = currentTime;
-    }
-    
-   
-    function startAnimation() {
-        if (!animationFrameId) {
-            animationFrameId = requestAnimationFrame(animate);
-        }
-    }
-    
-  
-    function stopAnimation() {
-        if (animationFrameId) {
-            cancelAnimationFrame(animationFrameId);
-            animationFrameId = null;
-        }
-    }
-    
-    
-    document.addEventListener('visibilitychange', () => {
-        if (document.hidden) {
-            stopAnimation();
-        } else {
-            startAnimation();
-        }
-    });
-    
-    
-    startAnimation();
-    
-    
     const hamburger = document.querySelector('.hamburger');
     const navMenu = document.querySelector('.nav-menu');
     
-    hamburger.addEventListener('click', function() {
-        hamburger.classList.toggle('active');
-        navMenu.classList.toggle('active');
-    });
-    
-   
-    document.querySelectorAll('.nav-link').forEach(link => {
-        link.addEventListener('click', function() {
-            hamburger.classList.remove('active');
-            navMenu.classList.remove('active');
+    if (hamburger && navMenu) {
+        hamburger.addEventListener('click', function(e) {
+            e.stopPropagation();
+            hamburger.classList.toggle('active');
+            navMenu.classList.toggle('active');
+            
+            // Prevent body scroll when menu is open
+            if (navMenu.classList.contains('active')) {
+                document.body.style.overflow = 'hidden';
+            } else {
+                document.body.style.overflow = '';
+            }
         });
-    });
+        
+        // Close menu when clicking on nav links
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function() {
+                hamburger.classList.remove('active');
+                navMenu.classList.remove('active');
+                document.body.style.overflow = '';
+            });
+        });
+        
+        // Close menu when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!hamburger.contains(e.target) && !navMenu.contains(e.target)) {
+                hamburger.classList.remove('active');
+                navMenu.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        });
+        
+        // Close menu on window resize
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 768) {
+                hamburger.classList.remove('active');
+                navMenu.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        });
+    }
     
    
     const navbar = document.querySelector('.navbar');
@@ -499,28 +382,19 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     
-    window.addEventListener('scroll', function() {
-        const scrolled = window.pageYOffset;
-        const shapes = document.querySelectorAll('.shape');
-        
-        shapes.forEach((shape, index) => {
-            const speed = 0.5 + (index * 0.1);
-            const yPos = -(scrolled * speed);
-            shape.style.transform = `translateY(${yPos}px)`;
-        });
-    });
+    // Shape scroll effects removed for consistent background
     
     
     function createSpaceBackground() {
         createStars();
         createStarbursts();
-        createMeteors();
+        // createMeteors() removed
     }
     
    
     function createStars() {
         const starsContainer = document.getElementById('stars');
-        const starCount = 150;
+        const starCount = 30;  // Reduced for cleaner UI
         
         for (let i = 0; i < starCount; i++) {
             const star = document.createElement('div');
@@ -542,7 +416,7 @@ document.addEventListener('DOMContentLoaded', function() {
    
     function createStarbursts() {
         const starburstsContainer = document.getElementById('starbursts');
-        const starburstCount = 20;
+        const starburstCount = 5;  // Reduced for cleaner UI
         
         for (let i = 0; i < starburstCount; i++) {
             const starburst = document.createElement('div');
@@ -557,71 +431,13 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
   
-    function createMeteors() {
-        const meteorsContainer = document.getElementById('meteors');
-        
-        function createMeteor() {
-            const meteor = document.createElement('div');
-            meteor.className = 'meteor';
-            meteor.style.left = Math.random() * 100 + '%';
-            meteor.style.top = Math.random() * 100 + '%';
-            meteor.style.animationDuration = (Math.random() * 2 + 2) + 's';
-            meteor.style.animationDelay = Math.random() * 5 + 's';
-            
-            meteorsContainer.appendChild(meteor);
-            
-            
-            setTimeout(() => {
-                if (meteor.parentNode) {
-                    meteor.parentNode.removeChild(meteor);
-                }
-            }, 5000);
-        }
-        
-        
-        setInterval(createMeteor, 2000);
-        
-        
-        for (let i = 0; i < 3; i++) {
-            setTimeout(createMeteor, i * 1000);
-        }
-    }
+    // createMeteors function completely removed
     
     
-    function createFloatingShapes() {
-        const shapesContainer = document.querySelector('.floating-shapes');
-        const existingShapes = shapesContainer.querySelectorAll('.shape');
-        
-        
-        existingShapes.forEach(shape => shape.remove());
-        
-        
-        for (let i = 0; i < 8; i++) {
-            const shape = document.createElement('div');
-            shape.className = 'shape';
-            shape.style.width = Math.random() * 100 + 50 + 'px';
-            shape.style.height = shape.style.width;
-            shape.style.left = Math.random() * 100 + '%';
-            shape.style.top = Math.random() * 100 + '%';
-            shape.style.animationDelay = Math.random() * 6 + 's';
-            shape.style.animationDuration = (Math.random() * 4 + 4) + 's';
-            
-            // Random blur effect
-            const blurIntensity = Math.random() * 10 + 5;
-            shape.style.filter = `blur(${blurIntensity}px)`;
-            
-            shapesContainer.appendChild(shape);
-        }
-    }
+    // createFloatingShapes function removed
     
     
     createSpaceBackground();
-    
-    
-    createFloatingShapes();
-    
-    
-    setInterval(createFloatingShapes, 15000);
     
     
     function typeWriter(element, text, speed = 100) {
@@ -649,39 +465,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
    
-    const cursor = document.createElement('div');
-    cursor.className = 'custom-cursor';
-    cursor.style.cssText = `
-        position: fixed;
-        width: 20px;
-        height: 20px;
-        background: rgba(99, 102, 241, 0.5);
-        border-radius: 50%;
-        pointer-events: none;
-        z-index: 9999;
-        transition: transform 0.1s ease;
-        backdrop-filter: blur(5px);
-        -webkit-backdrop-filter: blur(5px);
-    `;
-    document.body.appendChild(cursor);
-    
-    document.addEventListener('mousemove', function(e) {
-        cursor.style.left = e.clientX - 10 + 'px';
-        cursor.style.top = e.clientY - 10 + 'px';
-    });
-    
-    
-    document.querySelectorAll('a, button, .project-card, .timeline-content').forEach(el => {
-        el.addEventListener('mouseenter', function() {
-            cursor.style.transform = 'scale(2)';
-            cursor.style.background = 'rgba(99, 102, 241, 0.8)';
-        });
-        
-        el.addEventListener('mouseleave', function() {
-            cursor.style.transform = 'scale(1)';
-            cursor.style.background = 'rgba(99, 102, 241, 0.5)';
-        });
-    });
+    // Custom cursor removed for better UX
     
     
     const contactForm = document.querySelector('.contact-form');
@@ -808,19 +592,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     
-    function addRandomBlur() {
-        const elements = document.querySelectorAll('.shape, .project-placeholder, .image-placeholder');
-        elements.forEach(el => {
-            const blurValue = Math.random() * 3 + 1;
-            el.style.filter = `blur(${blurValue}px)`;
-        });
-    }
-    
-   
-    addRandomBlur();
-    
-    
-    setInterval(addRandomBlur, 10000);
     
     
     const sections = document.querySelectorAll('section');
@@ -885,7 +656,7 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
         
        
-        for (let i = 0; i < 30; i++) {
+        for (let i = 0; i < 10; i++) {
             const particle = document.createElement('div');
             particle.className = 'cosmic-particle';
             
