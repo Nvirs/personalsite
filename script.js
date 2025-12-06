@@ -287,7 +287,18 @@ document.addEventListener('DOMContentLoaded', function() {
             // Matrix characters
             this.characters = '01ﾊﾐﾋｰｳｼﾅﾓﾆｻﾜﾂｵﾘｱﾎﾃﾏｹﾒｴｶｷﾑﾕﾗｾﾈｽﾀﾇﾍABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
             
+            // Performance detection
+            this.isLowPerformance = this.detectLowPerformance();
+            
             this.init();
+        }
+        
+        detectLowPerformance() {
+            // Detect older/slower devices
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+            const hasLowMemory = navigator.deviceMemory && navigator.deviceMemory < 4;
+            const hasSlowCPU = navigator.hardwareConcurrency && navigator.hardwareConcurrency < 4;
+            return isMobile || hasLowMemory || hasSlowCPU;
         }
         
         init() {
@@ -349,8 +360,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         createParticles(width, height) {
-            const particlesPerRow = 12;
-            const particlesPerCol = 10;
+            // Reduce particle count on slower devices
+            const particlesPerRow = this.isLowPerformance ? 8 : 12;
+            const particlesPerCol = this.isLowPerformance ? 7 : 10;
             const spacingX = width / particlesPerRow;
             const spacingY = height / particlesPerCol;
             
@@ -388,13 +400,15 @@ document.addEventListener('DOMContentLoaded', function() {
             el.style.position = 'absolute';
             el.style.left = particle.x + 'px';
             el.style.top = particle.y + 'px';
-            el.style.color = '#ffffffff';
+            el.style.color = '#00ff41';
             el.style.fontSize = '12px';
             el.style.fontFamily = 'JetBrains Mono, monospace';
-            el.style.textShadow = '0 0 8px #ffffffff, 0 0 12px #ffffffff';
+            // Reduce glow on low performance devices
+            el.style.textShadow = this.isLowPerformance ? '0 0 5px #00ff41' : '0 0 8px #00ff41, 0 0 12px #00ff41';
             el.style.transform = 'translate(-50%, -50%)';
             el.style.pointerEvents = 'none';
             el.style.userSelect = 'none';
+            el.style.willChange = 'transform';
             return el;
         }
         
@@ -443,8 +457,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
             
-            // Particle collisions - multiple passes for better separation
-            for (let pass = 0; pass < 3; pass++) {
+            // Particle collisions - fewer passes on low performance
+            const collisionPasses = this.isLowPerformance ? 1 : 3;
+            for (let pass = 0; pass < collisionPasses; pass++) {
                 for (let i = 0; i < this.particles.length; i++) {
                     for (let j = i + 1; j < this.particles.length; j++) {
                         this.handleCollision(this.particles[i], this.particles[j]);
@@ -452,12 +467,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
             
-            // Update positions
+            // Update positions using transform for better performance
             for (const p of this.particles) {
-                p.element.style.left = p.x + 'px';
-                p.element.style.top = p.y + 'px';
+                p.element.style.transform = `translate(${p.x - 50}%, ${p.y - 50}%) translate(-50%, -50%)`;
                 
-                if (Math.random() < 0.02) {
+                // Reduce character changes on low performance
+                const changeRate = this.isLowPerformance ? 0.01 : 0.02;
+                if (Math.random() < changeRate) {
                     p.char = this.characters[Math.floor(Math.random() * this.characters.length)];
                     p.element.textContent = p.char;
                 }
