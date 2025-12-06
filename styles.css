@@ -694,7 +694,7 @@ body {
 /* Performance optimizations for mobile */
 @media (max-width: 768px) {
     .matrix-particle {
-        text-shadow: 0 0 5px #00ff41 !important;
+        text-shadow: 0 0 5px #ffffff !important;
     }
 }
 
