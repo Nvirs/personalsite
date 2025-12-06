@@ -679,6 +679,25 @@ body {
     z-index: 10;
 }
 
+.matrix-physics-container {
+    will-change: contents;
+}
+
+.matrix-particle {
+    will-change: transform;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    -webkit-font-smoothing: antialiased;
+    transform-origin: center center;
+}
+
+/* Performance optimizations for mobile */
+@media (max-width: 768px) {
+    .matrix-particle {
+        text-shadow: 0 0 5px #00ff41 !important;
+    }
+}
+
 .matrix-shard {
     will-change: transform, opacity;
 }
