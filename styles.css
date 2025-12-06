@@ -243,6 +243,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
+    position: relative;
 }
 
 .profile-img {
@@ -639,6 +640,81 @@ body {
 
 @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
     .profile-img { image-rendering: crisp-edges; }
+}
+
+/* Matrix Disintegration Effect */
+.avatar, .profile-img {
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.avatar:hover, .profile-img:hover {
+    transform: scale(1.02);
+}
+
+.matrix-container {
+    z-index: 10;
+}
+
+.matrix-shard {
+    will-change: transform, opacity;
+}
+
+@keyframes glassShatter {
+    0% {
+        transform: translateY(0) translateX(0) rotate(0deg) scale(1);
+        opacity: 1;
+    }
+    10% {
+        transform: translateY(10%) translateX(calc(var(--drift-x) * 0.1)) rotate(calc(var(--rotation) * 0.15)) scale(1);
+        opacity: 1;
+    }
+    30% {
+        transform: translateY(40%) translateX(calc(var(--drift-x) * 0.4)) rotate(calc(var(--rotation) * 0.5)) scale(0.95);
+        opacity: 0.9;
+    }
+    60% {
+        transform: translateY(100%) translateX(calc(var(--drift-x) * 0.8)) rotate(calc(var(--rotation) * 0.85)) scale(0.85);
+        opacity: 0.6;
+    }
+    100% {
+        transform: translateY(var(--fall-distance)) translateX(var(--drift-x)) rotate(var(--rotation)) scale(0.7);
+        opacity: 0;
+    }
+}
+
+/* Click Hint Easter Egg */
+.click-hint {
+    position: absolute;
+    top: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #ffffff;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 300;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    opacity: 0.3;
+    text-shadow: 0 0 8px #ffffff;
+    animation: hintGlow 3s ease-in-out infinite alternate;
+    pointer-events: none;
+    z-index: 1;
+}
+
+@keyframes hintGlow {
+    0% {
+        opacity: 0.3;
+        text-shadow: 0 0 4px #ffffff;
+    }
+    50% {
+        opacity: 0.6;
+        text-shadow: 0 0 12px #ffffff, 0 0 20px #ffffff;
+    }
+    100% {
+        opacity: 0.3;
+        text-shadow: 0 0 4px #ffffff;
+    }
 }
 
 /* Focus & Print */
