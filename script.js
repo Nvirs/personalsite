@@ -443,10 +443,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
             
-            // Particle collisions
-            for (let i = 0; i < this.particles.length; i++) {
-                for (let j = i + 1; j < this.particles.length; j++) {
-                    this.handleCollision(this.particles[i], this.particles[j]);
+            // Particle collisions - multiple passes for better separation
+            for (let pass = 0; pass < 3; pass++) {
+                for (let i = 0; i < this.particles.length; i++) {
+                    for (let j = i + 1; j < this.particles.length; j++) {
+                        this.handleCollision(this.particles[i], this.particles[j]);
+                    }
                 }
             }
             
@@ -470,29 +472,50 @@ document.addEventListener('DOMContentLoaded', function() {
             const distance = Math.sqrt(dx * dx + dy * dy);
             const minDist = p1.radius + p2.radius;
             
-            if (distance < minDist && distance > 0) {
+            // Prevent particles from overlapping
+            if (distance < minDist) {
+                if (distance === 0) {
+                    // Particles at same position - separate randomly
+                    const angle = Math.random() * Math.PI * 2;
+                    p1.x -= Math.cos(angle) * minDist * 0.5;
+                    p1.y -= Math.sin(angle) * minDist * 0.5;
+                    p2.x += Math.cos(angle) * minDist * 0.5;
+                    p2.y += Math.sin(angle) * minDist * 0.5;
+                    return;
+                }
+                
                 const nx = dx / distance;
                 const ny = dy / distance;
                 
+                // Stronger separation force to prevent clumping
                 const overlap = minDist - distance;
-                const separateX = nx * overlap * 0.5;
-                const separateY = ny * overlap * 0.5;
+                const separationForce = overlap * 0.55; // Increased from 0.5
+                const separateX = nx * separationForce;
+                const separateY = ny * separationForce;
                 
                 p1.x -= separateX;
                 p1.y -= separateY;
                 p2.x += separateX;
                 p2.y += separateY;
                 
+                // Elastic collision response
                 const dvx = p2.vx - p1.vx;
                 const dvy = p2.vy - p1.vy;
                 const dvDotN = dvx * nx + dvy * ny;
                 
-                if (dvDotN < 0) return;
+                // Apply impulse to both particles
+                const impulseFactor = this.collisionDamping;
+                p1.vx += dvDotN * nx * impulseFactor;
+                p1.vy += dvDotN * ny * impulseFactor;
+                p2.vx -= dvDotN * nx * impulseFactor;
+                p2.vy -= dvDotN * ny * impulseFactor;
                 
-                p1.vx += dvDotN * nx * this.collisionDamping;
-                p1.vy += dvDotN * ny * this.collisionDamping;
-                p2.vx -= dvDotN * nx * this.collisionDamping;
-                p2.vy -= dvDotN * ny * this.collisionDamping;
+                // Add slight repulsion to prevent sticking
+                const repulsion = 0.3;
+                p1.vx -= nx * repulsion;
+                p1.vy -= ny * repulsion;
+                p2.vx += nx * repulsion;
+                p2.vy += ny * repulsion;
             }
         }
         
