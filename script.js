@@ -286,12 +286,10 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Matrix characters
             this.characters = '01ﾊﾐﾋｰｳｼﾅﾓﾆｻﾜﾂｵﾘｱﾎﾃﾏｹﾒｴｶｷﾑﾕﾗｾﾈｽﾀﾇﾍABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-        
             
             this.init();
         }
         
-     
         init() {
             this.element.addEventListener('click', () => this.trigger());
             if (getComputedStyle(this.element.parentElement).position === 'static') {
@@ -445,7 +443,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
             
-            for (let pass = 0; pass < 3; pass++)  {
+            // Particle collisions - multiple passes for better separation
+            for (let pass = 0; pass < 3; pass++) {
                 for (let i = 0; i < this.particles.length; i++) {
                     for (let j = i + 1; j < this.particles.length; j++) {
                         this.handleCollision(this.particles[i], this.particles[j]);
@@ -453,12 +452,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
             
-            // Update positions using transform for better performance
+            // Update positions
             for (const p of this.particles) {
                 p.element.style.left = p.x + 'px';
                 p.element.style.top = p.y + 'px';
-                // Reduce character changes on low performance
-                 if (Math.random() < 0.02)  {
+                
+                if (Math.random() < 0.02) {
                     p.char = this.characters[Math.floor(Math.random() * this.characters.length)];
                     p.element.textContent = p.char;
                 }
