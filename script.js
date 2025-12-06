@@ -269,6 +269,267 @@ document.addEventListener('DOMContentLoaded', function() {
             this.style.outline = 'none';
         });
     });
+    class MatrixParticlePhysics {
+        constructor(element) {
+            this.element = element;
+            this.isAnimating = false;
+            this.container = null;
+            this.particles = [];
+            this.animationFrame = null;
+            
+            // Physics constants
+            this.gravity = 0.4;
+            this.friction = 0.98;
+            this.bounce = 0.3;
+            this.particleRadius = 6;
+            this.collisionDamping = 0.95;
+            
+            // Matrix characters
+            this.characters = '01ﾊﾐﾋｰｳｼﾅﾓﾆｻﾜﾂｵﾘｱﾎﾃﾏｹﾒｴｶｷﾑﾕﾗｾﾈｽﾀﾇﾍABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            
+            this.init();
+        }
+        
+        init() {
+            this.element.addEventListener('click', () => this.trigger());
+            if (getComputedStyle(this.element.parentElement).position === 'static') {
+                this.element.parentElement.style.position = 'relative';
+            }
+        }
+        
+        trigger() {
+            if (this.isAnimating) {
+                this.cleanup();
+            }
+            
+            this.isAnimating = true;
+            this.startParticleSimulation();
+        }
+        
+        startParticleSimulation() {
+            // Hide original image
+            this.element.style.opacity = '0';
+            
+            // Create physics container
+            this.container = document.createElement('div');
+            this.container.className = 'matrix-physics-container';
+            
+            const rect = this.element.getBoundingClientRect();
+            const parentRect = this.element.parentElement.getBoundingClientRect();
+            
+            this.container.style.position = 'absolute';
+            this.container.style.left = (rect.left - parentRect.left) + 'px';
+            this.container.style.top = (rect.top - parentRect.top) + 'px';
+            this.container.style.width = rect.width + 'px';
+            this.container.style.height = rect.height + 'px';
+            this.container.style.pointerEvents = 'none';
+            this.container.style.overflow = 'hidden';
+            this.container.style.borderRadius = '50%';
+            
+            this.element.parentElement.appendChild(this.container);
+            
+            // Store bounds for circular constraint
+            this.containerWidth = rect.width;
+            this.containerHeight = rect.height;
+            this.centerX = rect.width / 2;
+            this.centerY = rect.height / 2;
+            this.radius = Math.min(rect.width, rect.height) / 2;
+            
+            // Create particles
+            this.createParticles(rect.width, rect.height);
+            
+            // Start physics loop
+            this.lastTime = Date.now();
+            this.simulate();
+            
+            // Auto cleanup after 4 seconds
+            setTimeout(() => {
+                this.fadeOutAndRestore();
+            }, 4000);
+        }
+        
+        createParticles(width, height) {
+            const particlesPerRow = 12;
+            const particlesPerCol = 10;
+            const spacingX = width / particlesPerRow;
+            const spacingY = height / particlesPerCol;
+            
+            for (let row = 0; row < particlesPerCol; row++) {
+                for (let col = 0; col < particlesPerRow; col++) {
+                    const x = col * spacingX + spacingX / 2 + (Math.random() - 0.5) * spacingX * 0.5;
+                    const y = row * spacingY + spacingY / 2 + (Math.random() - 0.5) * spacingY * 0.5;
+                    
+                    const centerX = width / 2;
+                    const centerY = height / 2;
+                    const angle = Math.atan2(y - centerY, x - centerX);
+                    const explosionForce = 2 + Math.random() * 3;
+                    
+                    const particle = {
+                        x: x,
+                        y: y,
+                        vx: Math.cos(angle) * explosionForce + (Math.random() - 0.5) * 2,
+                        vy: Math.sin(angle) * explosionForce + (Math.random() - 0.5) * 2 - 1,
+                        char: this.characters[Math.floor(Math.random() * this.characters.length)],
+                        element: null,
+                        radius: this.particleRadius
+                    };
+                    
+                    particle.element = this.createParticleElement(particle);
+                    this.container.appendChild(particle.element);
+                    this.particles.push(particle);
+                }
+            }
+        }
+        
+        createParticleElement(particle) {
+            const el = document.createElement('div');
+            el.className = 'matrix-particle';
+            el.textContent = particle.char;
+            el.style.position = 'absolute';
+            el.style.left = particle.x + 'px';
+            el.style.top = particle.y + 'px';
+            el.style.color = '#ffffffff';
+            el.style.fontSize = '12px';
+            el.style.fontFamily = 'JetBrains Mono, monospace';
+            el.style.textShadow = '0 0 8px #ffffffff, 0 0 12px #ffffffff';
+            el.style.transform = 'translate(-50%, -50%)';
+            el.style.pointerEvents = 'none';
+            el.style.userSelect = 'none';
+            return el;
+        }
+        
+        simulate() {
+            if (!this.isAnimating) return;
+            
+            const currentTime = Date.now();
+            const deltaTime = Math.min((currentTime - this.lastTime) / 16.67, 2);
+            this.lastTime = currentTime;
+            
+            const containerHeight = parseFloat(this.container.style.height);
+            const containerWidth = parseFloat(this.container.style.width);
+            
+            for (let i = 0; i < this.particles.length; i++) {
+                const p = this.particles[i];
+                
+                p.vy += this.gravity * deltaTime;
+                p.x += p.vx * deltaTime;
+                p.y += p.vy * deltaTime;
+                p.vx *= this.friction;
+                p.vy *= this.friction;
+                
+                // Circular boundary collision
+                const dx = p.x - this.centerX;
+                const dy = p.y - this.centerY;
+                const distFromCenter = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distFromCenter + p.radius > this.radius) {
+                    // Push particle back inside circle
+                    const angle = Math.atan2(dy, dx);
+                    const targetDist = this.radius - p.radius;
+                    p.x = this.centerX + Math.cos(angle) * targetDist;
+                    p.y = this.centerY + Math.sin(angle) * targetDist;
+                    
+                    // Reflect velocity (bounce off circular wall)
+                    const normalX = dx / distFromCenter;
+                    const normalY = dy / distFromCenter;
+                    const dotProduct = p.vx * normalX + p.vy * normalY;
+                    
+                    p.vx -= 2 * dotProduct * normalX * this.bounce;
+                    p.vy -= 2 * dotProduct * normalY * this.bounce;
+                    
+                    // Extra friction on circular boundary
+                    if (Math.abs(p.vy) < 0.5) p.vy = 0;
+                    p.vx *= 0.95;
+                }
+            }
+            
+            // Particle collisions
+            for (let i = 0; i < this.particles.length; i++) {
+                for (let j = i + 1; j < this.particles.length; j++) {
+                    this.handleCollision(this.particles[i], this.particles[j]);
+                }
+            }
+            
+            // Update positions
+            for (const p of this.particles) {
+                p.element.style.left = p.x + 'px';
+                p.element.style.top = p.y + 'px';
+                
+                if (Math.random() < 0.02) {
+                    p.char = this.characters[Math.floor(Math.random() * this.characters.length)];
+                    p.element.textContent = p.char;
+                }
+            }
+            
+            this.animationFrame = requestAnimationFrame(() => this.simulate());
+        }
+        
+        handleCollision(p1, p2) {
+            const dx = p2.x - p1.x;
+            const dy = p2.y - p1.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            const minDist = p1.radius + p2.radius;
+            
+            if (distance < minDist && distance > 0) {
+                const nx = dx / distance;
+                const ny = dy / distance;
+                
+                const overlap = minDist - distance;
+                const separateX = nx * overlap * 0.5;
+                const separateY = ny * overlap * 0.5;
+                
+                p1.x -= separateX;
+                p1.y -= separateY;
+                p2.x += separateX;
+                p2.y += separateY;
+                
+                const dvx = p2.vx - p1.vx;
+                const dvy = p2.vy - p1.vy;
+                const dvDotN = dvx * nx + dvy * ny;
+                
+                if (dvDotN < 0) return;
+                
+                p1.vx += dvDotN * nx * this.collisionDamping;
+                p1.vy += dvDotN * ny * this.collisionDamping;
+                p2.vx -= dvDotN * nx * this.collisionDamping;
+                p2.vy -= dvDotN * ny * this.collisionDamping;
+            }
+        }
+        
+        fadeOutAndRestore() {
+            if (this.container) {
+                this.container.style.transition = 'opacity 0.5s ease';
+                this.container.style.opacity = '0';
+            }
+            
+            setTimeout(() => {
+                this.cleanup();
+                this.element.style.transition = 'opacity 0.3s ease';
+                this.element.style.opacity = '1';
+                setTimeout(() => {
+                    this.element.style.transition = '';
+                    this.isAnimating = false;
+                }, 300);
+            }, 500);
+        }
+        
+        cleanup() {
+            if (this.animationFrame) {
+                cancelAnimationFrame(this.animationFrame);
+                this.animationFrame = null;
+            }
+            
+            if (this.container && this.container.parentElement) {
+                this.container.parentElement.removeChild(this.container);
+            }
+            
+            this.container = null;
+            this.particles = [];
+        }
+    }
+    document.querySelectorAll('.avatar, .profile-img').forEach(element => {
+        new MatrixParticlePhysics(element);
+    });
     
     console.log('Portfolio loaded');
 });
