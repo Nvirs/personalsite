@@ -400,11 +400,11 @@ document.addEventListener('DOMContentLoaded', function() {
             el.style.position = 'absolute';
             el.style.left = particle.x + 'px';
             el.style.top = particle.y + 'px';
-            el.style.color = '#00ff41';
+            el.style.color = '#ffffffff';
             el.style.fontSize = '12px';
             el.style.fontFamily = 'JetBrains Mono, monospace';
             // Reduce glow on low performance devices
-            el.style.textShadow = this.isLowPerformance ? '0 0 5px #00ff41' : '0 0 8px #00ff41, 0 0 12px #00ff41';
+            el.style.textShadow = this.isLowPerformance ? '0 0 5px #ffffffff' : '0 0 8px #ffffffff, 0 0 12px #ffffffff';
             el.style.transform = 'translate(-50%, -50%)';
             el.style.pointerEvents = 'none';
             el.style.userSelect = 'none';
