@@ -756,6 +756,56 @@ body {
     }
 }
 
+/* Glitch Effect */
+.glitch-active {
+    animation: glitchFlicker 0.05s infinite;
+    text-shadow: 
+        2px 0 #ff0000,
+        -2px 0 #00ff00,
+        0 0 8px #ffffff;
+    color: #ffffff !important;
+    will-change: text-shadow;
+    position: relative;
+}
+
+@keyframes glitchFlicker {
+    0% {
+        text-shadow: 
+            2px 0 #ff0000,
+            -2px 0 #00ff00,
+            0 0 8px #ffffff;
+        opacity: 1;
+    }
+    25% {
+        text-shadow: 
+            -2px 0 #ff0000,
+            2px 0 #00ff00,
+            0 0 12px #ffffff;
+        opacity: 0.95;
+    }
+    50% {
+        text-shadow: 
+            2px 1px #ff0000,
+            -2px -1px #00ff00,
+            0 0 10px #ffffff;
+        opacity: 1;
+    }
+    75% {
+        text-shadow: 
+            -1px 2px #ff0000,
+            1px -2px #00ff00,
+            0 0 15px #ffffff;
+        opacity: 0.9;
+    }
+    100% {
+        text-shadow: 
+            2px 0 #ff0000,
+            -2px 0 #00ff00,
+            0 0 8px #ffffff;
+        opacity: 1;
+    }
+}
+
 /* Focus & Print */
 .nav-item:focus, .contact-value:focus, .contact-link:focus {
     outline: 1px solid var(--text-primary);

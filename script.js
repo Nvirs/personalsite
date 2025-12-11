@@ -298,8 +298,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         trigger() {
+            // Prevent new animation if one is already running
             if (this.isAnimating) {
-                this.cleanup();
+                return;
             }
             
             this.isAnimating = true;
@@ -550,9 +551,100 @@ document.addEventListener('DOMContentLoaded', function() {
             this.particles = [];
         }
     }
+    
+    // Text Glitch Effect Handler
+    class TextGlitchEffect {
+        constructor() {
+            this.isGlitching = false;
+            this.characters = '01ﾊﾐﾋｰｳｼﾅﾓﾆｻﾜﾂｵﾘｱﾎﾃﾏｹﾒｴｶｷﾑﾕﾗｾﾈｽﾀﾇﾍABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            this.initTextClickHandlers();
+        }
+        
+        initTextClickHandlers() {
+            // Add click handlers to navigation text only
+            const navTextElements = document.querySelectorAll('.brand-text');
+            navTextElements.forEach(element => {
+                element.style.cursor = 'pointer';
+                element.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.triggerGlitch();
+                });
+            });
+        }
+        
+        triggerGlitch() {
+            if (this.isGlitching) {
+                return;
+            }
+            
+            this.isGlitching = true;
+            
+            // Get all text-containing elements, excluding nested children
+            const allElements = document.querySelectorAll('h1, h2, h3, h4, h5, h6, p, a:not(.nav-item a), span:not(.hero-title span), li, .nav-item, .brand-text, .section-title, .project-title, .project-desc, .tech-tag');
+            
+            // Filter to only include leaf elements (no text-containing children)
+            const textElements = Array.from(allElements).filter(el => {
+                const hasTextChildren = Array.from(el.children).some(child => {
+                    return child.textContent.trim().length > 0;
+                });
+                return !hasTextChildren && el.textContent.trim().length > 0;
+            });
+            
+            // Store original text
+            const originalTexts = new Map();
+            
+            textElements.forEach(el => {
+                const originalText = el.textContent;
+                originalTexts.set(el, originalText);
+                el.classList.add('glitch-active');
+            });
+            
+            // Glitch animation
+            let glitchFrame = 0;
+            const maxGlitchFrames = 30;
+            
+            const glitchInterval = setInterval(() => {
+                textElements.forEach(el => {
+                    const originalText = originalTexts.get(el);
+                    let glitchedText = '';
+                    
+                    for (let i = 0; i < originalText.length; i++) {
+                        if (originalText[i] === ' ' || originalText[i] === '\n') {
+                            glitchedText += originalText[i];
+                        } else if (Math.random() < 0.4) {
+                            glitchedText += this.characters[Math.floor(Math.random() * this.characters.length)];
+                        } else {
+                            glitchedText += originalText[i];
+                        }
+                    }
+                    
+                    el.textContent = glitchedText;
+                });
+                
+                glitchFrame++;
+                
+                if (glitchFrame >= maxGlitchFrames) {
+                    clearInterval(glitchInterval);
+                    
+                    setTimeout(() => {
+                        textElements.forEach(el => {
+                            el.textContent = originalTexts.get(el);
+                            el.classList.remove('glitch-active');
+                        });
+                        this.isGlitching = false;
+                    }, 200);
+                }
+            }, 50);
+        }
+    }
+    
+    // Initialize image particle effects
     document.querySelectorAll('.avatar, .profile-img').forEach(element => {
         new MatrixParticlePhysics(element);
     });
+    
+    // Initialize text glitch effect
+    new TextGlitchEffect();
     
     console.log('Portfolio loaded');
 });
