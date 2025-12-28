@@ -343,10 +343,15 @@ document.addEventListener('DOMContentLoaded', function() {
             this.lastTime = Date.now();
             this.simulate();
             
-            // Auto cleanup after 4 seconds
+            // Auto start rebuilding after 2 seconds
+            setTimeout(() => {
+                this.startRebuilding();
+            }, 2000);
+            
+            // Auto cleanup after rebuilding completes (total 5 seconds)
             setTimeout(() => {
                 this.fadeOutAndRestore();
-            }, 4000);
+            }, 5000);
         }
         
         createParticles(width, height) {
@@ -368,11 +373,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     const particle = {
                         x: x,
                         y: y,
+                        originalX: x,  // Store original position for rebuilding
+                        originalY: y,
                         vx: Math.cos(angle) * explosionForce + (Math.random() - 0.5) * 2,
                         vy: Math.sin(angle) * explosionForce + (Math.random() - 0.5) * 2 - 1,
                         char: this.characters[Math.floor(Math.random() * this.characters.length)],
                         element: null,
-                        radius: this.particleRadius
+                        radius: this.particleRadius,
+                        isRebuilding: false,
+                        rebuildDelay: 0
                     };
                     
                     particle.element = this.createParticleElement(particle);
@@ -409,46 +418,101 @@ document.addEventListener('DOMContentLoaded', function() {
             const containerHeight = parseFloat(this.container.style.height);
             const containerWidth = parseFloat(this.container.style.width);
             
+            let allParticlesInPlace = true;
+            
             for (let i = 0; i < this.particles.length; i++) {
                 const p = this.particles[i];
                 
-                p.vy += this.gravity * deltaTime;
-                p.x += p.vx * deltaTime;
-                p.y += p.vy * deltaTime;
-                p.vx *= this.friction;
-                p.vy *= this.friction;
-                
-                // Circular boundary collision
-                const dx = p.x - this.centerX;
-                const dy = p.y - this.centerY;
-                const distFromCenter = Math.sqrt(dx * dx + dy * dy);
-                
-                if (distFromCenter + p.radius > this.radius) {
-                    // Push particle back inside circle
-                    const angle = Math.atan2(dy, dx);
-                    const targetDist = this.radius - p.radius;
-                    p.x = this.centerX + Math.cos(angle) * targetDist;
-                    p.y = this.centerY + Math.sin(angle) * targetDist;
+                // If particle is rebuilding, move it back to original position
+                if (p.isRebuilding) {
+                    const dx = p.originalX - p.x;
+                    const dy = p.originalY - p.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
                     
-                    // Reflect velocity (bounce off circular wall)
-                    const normalX = dx / distFromCenter;
-                    const normalY = dy / distFromCenter;
-                    const dotProduct = p.vx * normalX + p.vy * normalY;
+                    if (distance > 0.3) {
+                        allParticlesInPlace = false;
+                        
+                        // Stronger magnetic pull with acceleration
+                        const pullStrength = 0.25 + (1 - Math.min(distance / 150, 1)) * 0.3;
+                        const acceleration = (distance / 100) * pullStrength;
+                        
+                        p.vx += (dx / distance) * acceleration * 5;
+                        p.vy += (dy / distance) * acceleration * 5;
+                        
+                        // Stronger damping for smoother arrival
+                        p.vx *= 0.82;
+                        p.vy *= 0.82;
+                        
+                        p.x += p.vx;
+                        p.y += p.vy;
+                        
+                        // Color transition: white -> green -> white
+                        const progress = Math.max(0, 1 - distance / 120);
+                        if (progress < 0.5) {
+                            // Getting closer: fade to green
+                            const t = progress * 2;
+                            const white = Math.floor(1 * t);
+                            p.element.style.color = `rgb(${255 - white * 0.3}, 255, ${255 - white * 0.3})`;
+                            p.element.style.textShadow = `0 0 ${8 + t * 4}px rgb(${255 - white * 0.3}, 255, ${255 - white  * 0.3})`;
+                        } else {
+                            // Arriving: fade back to white
+                            const t = (progress - 0.5) * 2;
+                            const white = Math.floor(1 * (1 - t));
+                            p.element.style.color = `rgb(${255 - white * 0.3}, 255, ${255 - white * 0.3})`;
+                            p.element.style.textShadow = `0 0 ${12 - t * 4}px rgb(${255 - white * 0.3}, 255, ${255 - white * 0.3})`;
+                        }
+                    } else {
+                        // Snap to final position
+                        p.x = p.originalX;
+                        p.y = p.originalY;
+                        p.vx = 0;
+                        p.vy = 0;
+                        p.element.style.color = '#ffffff';
+                        p.element.style.textShadow = '0 0 8px #ffffff';
+                    }
+                } else {
+                    allParticlesInPlace = false;
+                    // Normal physics
+                    p.vy += this.gravity * deltaTime;
+                    p.x += p.vx * deltaTime;
+                    p.y += p.vy * deltaTime;
+                    p.vx *= this.friction;
+                    p.vy *= this.friction;
                     
-                    p.vx -= 2 * dotProduct * normalX * this.bounce;
-                    p.vy -= 2 * dotProduct * normalY * this.bounce;
+                    // Circular boundary collision
+                    const dx = p.x - this.centerX;
+                    const dy = p.y - this.centerY;
+                    const distFromCenter = Math.sqrt(dx * dx + dy * dy);
                     
-                    // Extra friction on circular boundary
-                    if (Math.abs(p.vy) < 0.5) p.vy = 0;
-                    p.vx *= 0.95;
+                    if (distFromCenter + p.radius > this.radius) {
+                        // Push particle back inside circle
+                        const angle = Math.atan2(dy, dx);
+                        const targetDist = this.radius - p.radius;
+                        p.x = this.centerX + Math.cos(angle) * targetDist;
+                        p.y = this.centerY + Math.sin(angle) * targetDist;
+                        
+                        // Reflect velocity (bounce off circular wall)
+                        const normalX = dx / distFromCenter;
+                        const normalY = dy / distFromCenter;
+                        const dotProduct = p.vx * normalX + p.vy * normalY;
+                        
+                        p.vx -= 2 * dotProduct * normalX * this.bounce;
+                        p.vy -= 2 * dotProduct * normalY * this.bounce;
+                        
+                        // Extra friction on circular boundary
+                        if (Math.abs(p.vy) < 0.5) p.vy = 0;
+                        p.vx *= 0.95;
+                    }
                 }
             }
             
-            // Particle collisions - multiple passes for better separation
-            for (let pass = 0; pass < 3; pass++) {
-                for (let i = 0; i < this.particles.length; i++) {
-                    for (let j = i + 1; j < this.particles.length; j++) {
-                        this.handleCollision(this.particles[i], this.particles[j]);
+            // Particle collisions only when not rebuilding
+            if (!this.particles.some(p => p.isRebuilding)) {
+                for (let pass = 0; pass < 3; pass++) {
+                    for (let i = 0; i < this.particles.length; i++) {
+                        for (let j = i + 1; j < this.particles.length; j++) {
+                            this.handleCollision(this.particles[i], this.particles[j]);
+                        }
                     }
                 }
             }
@@ -458,7 +522,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 p.element.style.left = p.x + 'px';
                 p.element.style.top = p.y + 'px';
                 
-                if (Math.random() < 0.02) {
+                if (!p.isRebuilding && Math.random() < 0.02) {
                     p.char = this.characters[Math.floor(Math.random() * this.characters.length)];
                     p.element.textContent = p.char;
                 }
@@ -518,6 +582,35 @@ document.addEventListener('DOMContentLoaded', function() {
                 p2.vx += nx * repulsion;
                 p2.vy += ny * repulsion;
             }
+        }
+        
+        startRebuilding() {
+            // Activate particles in a wave from outside to center
+            const centerX = this.containerWidth / 2;
+            const centerY = this.containerHeight / 2;
+            
+            // Sort particles by distance from center (furthest first)
+            const sortedParticles = [...this.particles].sort((a, b) => {
+                const distA = Math.sqrt((a.originalX - centerX) ** 2 + (a.originalY - centerY) ** 2);
+                const distB = Math.sqrt((b.originalX - centerX) ** 2 + (b.originalY - centerY) ** 2);
+                return distB - distA;
+            });
+            
+            // Activate particles with staggered delays - faster wave
+            sortedParticles.forEach((particle, index) => {
+                particle.rebuildDelay = index * 15; // 15ms between each particle activation
+                setTimeout(() => {
+                    particle.isRebuilding = true;
+                    // Add initial impulse for more dynamic movement
+                    const dx = particle.originalX - particle.x;
+                    const dy = particle.originalY - particle.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    if (distance > 0) {
+                        particle.vx = (dx / distance) * 2;
+                        particle.vy = (dy / distance) * 2;
+                    }
+                }, particle.rebuildDelay);
+            });
         }
         
         fadeOutAndRestore() {
