@@ -241,9 +241,16 @@ document.addEventListener('DOMContentLoaded', function() {
     // Smooth scrolling navigation
     document.querySelectorAll('.nav-item').forEach(link => {
         link.addEventListener('click', function(e) {
+                 const href = this.getAttribute('href');
+            
+            // Only prevent default for internal anchor links
+            if (!href || !href.startsWith('#')) {
+                return;
+            }
+            
             e.preventDefault();
             
-            const targetId = this.getAttribute('href').substring(1);
+            const targetId = href.substring(1);
             const targetElement = document.getElementById(targetId);
             const mainContainer = document.querySelector('.main');
             
