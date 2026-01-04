@@ -774,9 +774,9 @@ async function loadGitHubActivity() {
         console.error('Error loading GitHub activity:', error);
         container.innerHTML = `
             <div style="text-align: center; color: #666; padding: 2rem;">
-                <p>GitHub activity data not available yet.</p>
-                <p style="font-size: 0.8rem; margin-top: 0.5rem;">
-                    Run: <code style="background: #1a1a1a; padding: 0.2rem 0.5rem; border-radius: 3px;">node fetch-github.js > github-data.json</code>
+                <p>Loading GitHub activity...</p>
+                <p style="font-size: 0.8rem; margin-top: 0.5rem; color: #555;">
+                    Data will appear once the GitHub Action runs
                 </p>
             </div>
         `;
