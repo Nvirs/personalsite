@@ -738,13 +738,177 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Initialize image particle effects
+    
     document.querySelectorAll('.avatar, .profile-img').forEach(element => {
         new MatrixParticlePhysics(element);
     });
     
-    // Initialize text glitch effect
+    
     new TextGlitchEffect();
+
+    loadGitHubActivity();
     
     console.log('Portfolio loaded');
 });
+
+
+async function loadGitHubActivity() {
+    const container = document.getElementById('github-contributions');
+    
+    if (!container) return;
+    
+    try {
+        
+        const response = await fetch('./github-data.json');
+        
+        if (!response.ok) {
+            throw new Error('Data file not found');
+        }
+        
+        const data = await response.json();
+        
+        
+        renderActivityGraph(container, data);
+        
+    } catch (error) {
+        console.error('Error loading GitHub activity:', error);
+        container.innerHTML = `
+            <div style="text-align: center; color: #666; padding: 2rem;">
+                <p>GitHub activity data not available yet.</p>
+                <p style="font-size: 0.8rem; margin-top: 0.5rem;">
+                    Run: <code style="background: #1a1a1a; padding: 0.2rem 0.5rem; border-radius: 3px;">node fetch-github.js > github-data.json</code>
+                </p>
+            </div>
+        `;
+    }
+}
+
+function renderActivityGraph(container, data) {
+    // Convert dates
+    const contributionData = data.map(d => ({
+        date: new Date(d.date),
+        count: d.count || 0
+    }));
+    
+    // Find max for color scaling
+    const maxCount = Math.max(...contributionData.map(d => d.count), 1);
+    
+    // Group by weeks (starting Sunday)
+    const weeks = [];
+    let currentWeek = [];
+    
+    // Find the first Sunday before the data starts
+    const firstDate = contributionData[0].date;
+    const dayOfWeek = firstDate.getDay();
+    
+    // Add empty cells for days before first date
+    for (let i = 0; i < dayOfWeek; i++) {
+        currentWeek.push(null);
+    }
+    
+    contributionData.forEach(day => {
+        const dayIndex = day.date.getDay();
+        
+        // Start new week on Sunday
+        if (dayIndex === 0 && currentWeek.length > 0) {
+            // Fill remaining days of the week
+            while (currentWeek.length < 7) {
+                currentWeek.push(null);
+            }
+            weeks.push(currentWeek);
+            currentWeek = [];
+        }
+        
+        currentWeek.push(day);
+    });
+    
+    // Add last week
+    if (currentWeek.length > 0) {
+        while (currentWeek.length < 7) {
+            currentWeek.push(null);
+        }
+        weeks.push(currentWeek);
+    }
+    
+    // Create grid HTML
+    container.innerHTML = `
+        <div class="contribution-grid-wrapper">
+            <div class="contribution-grid-container">
+                <div class="weekday-labels">
+                    <span class="weekday-label"></span>
+                    <span class="weekday-label">Mon</span>
+                    <span class="weekday-label"></span>
+                    <span class="weekday-label">Wed</span>
+                    <span class="weekday-label"></span>
+                    <span class="weekday-label">Fri</span>
+                    <span class="weekday-label"></span>
+                </div>
+                <div class="contribution-grid">
+                    ${weeks.map(week => `
+                        <div class="contribution-week">
+                            ${week.map(day => {
+                                if (!day) {
+                                    return '<div class="contribution-day empty"></div>';
+                                }
+                                
+                                
+                                const intensity = day.count / maxCount;
+                                const lightness = 10 + intensity * 60;
+                                
+                                const dateStr = day.date.toLocaleDateString('en-US', { 
+                                    month: 'short', 
+                                    day: 'numeric',
+                                    year: 'numeric'
+                                });
+                                
+                                return `
+                                    <div class="contribution-day" 
+                                         style="background: hsl(0, 0%, ${lightness}%)"
+                                         data-count="${day.count}"
+                                         data-date="${dateStr}">
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+            <div class="contribution-legend">
+                <span class="legend-label">Less</span>
+                <div class="legend-box" style="background: hsl(0, 0%, 10%)"></div>
+                <div class="legend-box" style="background: hsl(0, 0%, 25%)"></div>
+                <div class="legend-box" style="background: hsl(0, 0%, 45%)"></div>
+                <div class="legend-box" style="background: hsl(0, 0%, 70%)"></div>
+                <span class="legend-label">More</span>
+            </div>
+        </div>
+    `;
+    
+    // Add tooltip functionality
+    const days = container.querySelectorAll('.contribution-day:not(.empty)');
+    
+    days.forEach(day => {
+        day.addEventListener('mouseenter', (e) => {
+            const count = e.target.dataset.count;
+            const date = e.target.dataset.date;
+            
+            const tooltip = document.createElement('div');
+            tooltip.className = 'contribution-tooltip';
+            tooltip.textContent = `${count} contributions on ${date}`;
+            document.body.appendChild(tooltip);
+            
+            const rect = e.target.getBoundingClientRect();
+            tooltip.style.left = rect.left + rect.width / 2 + 'px';
+            tooltip.style.top = rect.top - 10 + 'px';
+            
+            e.target._tooltip = tooltip;
+        });
+        
+        day.addEventListener('mouseleave', (e) => {
+            if (e.target._tooltip) {
+                e.target._tooltip.remove();
+                delete e.target._tooltip;
+            }
+        });
+    });
+}

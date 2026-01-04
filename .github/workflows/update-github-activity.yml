@@ -1,0 +1,124 @@
+name: Update GitHub Activity
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  
+  workflow_dispatch:
+
+permissions:
+  contents: write  
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4  
+        with:
+          persist-credentials: false
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Fetch GitHub activity via official API
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  
+        run: |
+          node << 'EOF'
+          const https = require('https');
+          
+          const query = JSON.stringify({
+            query: `{
+              user(login: "Nvirs") {
+                contributionsCollection {
+                  contributionCalendar {
+                    weeks {
+                      contributionDays {
+                        date
+                        contributionCount
+                      }
+                    }
+                  }
+                }
+              }
+            }`
+          });
+          
+          const options = {
+            hostname: 'api.github.com',
+            path: '/graphql',
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${process.env.GITHUB_TOKEN}`,
+              'User-Agent': 'GitHub-Activity-Fetcher'
+            }
+          };
+          
+          const req = https.request(options, (res) => {
+            let data = '';
+            res.on('data', (chunk) => data += chunk);
+            res.on('end', () => {
+              try {
+                const json = JSON.parse(data);
+                const days = json.data.user.contributionsCollection.contributionCalendar.weeks
+                  .flatMap(week => week.contributionDays)
+                  .map(day => ({
+                    date: day.date,
+                    count: day.contributionCount
+                  }));
+                
+                require('fs').writeFileSync('github-data.json', JSON.stringify(days, null, 2));
+                console.log('Successfully fetched contribution data');
+              } catch (err) {
+                console.error('Error parsing response:', err);
+                process.exit(1);
+              }
+            });
+          });
+          
+          req.on('error', (err) => {
+            console.error('Request error:', err);
+            process.exit(1);
+          });
+          
+          req.write(query);
+          req.end();
+          EOF
+      
+      - name: Verify data integrity
+        run: |
+          if [ ! -f github-data.json ]; then
+            echo "Error: github-data.json not created"
+            exit 1
+          fi
+          
+          # Validate JSON
+          if ! python3 -m json.tool github-data.json > /dev/null 2>&1; then
+            echo "Error: Invalid JSON"
+            exit 1
+          fi
+          
+          # Check file size (prevent anomalies)
+          size=$(wc -c < github-data.json)
+          if [ $size -lt 100 ] || [ $size -gt 100000 ]; then
+            echo "Error: Suspicious file size: $size bytes"
+            exit 1
+          fi
+      
+      - name: Commit changes
+        run: |
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          
+          if [ -n "$(git status --porcelain github-data.json)" ]; then
+            git add github-data.json
+            git commit -m "Update GitHub activity data [automated]"
+            git push
+          else
+            echo "No changes to commit"
+          fi
+

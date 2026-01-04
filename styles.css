@@ -622,6 +622,115 @@ body {
 
 .contact-link:hover { color: var(--text-primary); }
 
+/* GitHub Activity */
+.github-contributions {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 1rem;
+}
+
+.contribution-grid-wrapper {
+    overflow-x: auto;
+    padding: 1rem 0;
+}
+
+.contribution-grid-container {
+    display: flex;
+    gap: 8px;
+    min-width: fit-content;
+}
+
+.weekday-labels {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding-right: 4px;
+}
+
+.weekday-label {
+    height: 11px;
+    font-size: 9px;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    line-height: 11px;
+}
+
+.contribution-grid {
+    display: flex;
+    gap: 3px;
+}
+
+.contribution-week {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.contribution-day {
+    width: 11px;
+    height: 11px;
+    border-radius: 2px;
+    border: 1px solid #1a1a1a;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.contribution-day.empty {
+    background: transparent !important;
+    border: none;
+    cursor: default;
+}
+
+.contribution-day:not(.empty):hover {
+    border-color: #ffffff;
+    transform: scale(1.4);
+    z-index: 10;
+}
+
+.contribution-legend {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 4px;
+    margin-top: 1rem;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.legend-label {
+    margin: 0 4px;
+}
+
+.legend-box {
+    width: 11px;
+    height: 11px;
+    border-radius: 2px;
+    border: 1px solid #1a1a1a;
+}
+
+.contribution-tooltip {
+    position: fixed;
+    transform: translate(-50%, -100%);
+    background: rgba(0, 0, 0, 0.95);
+    color: #ffffff;
+    padding: 0.5rem 0.75rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    pointer-events: none;
+    z-index: 1000;
+    border: 1px solid #333;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.loading-text {
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    padding: 2rem;
+}
+
 /* Footer */
 .footer {
     border-top: 1px solid var(--border-primary);
