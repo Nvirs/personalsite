@@ -813,18 +813,24 @@ function renderActivityGraph(container, data) {
         weeks.push(currentWeek);
     }
     
-    // Create grid HTML
+    
+    const totalContributions = contributionData.reduce((sum, day) => sum + day.count, 0);
+    
+   
     container.innerHTML = `
+        <div class="contribution-stats">
+            <span class="total-contributions">${totalContributions.toLocaleString()} contributions in the last year</span>
+        </div>
         <div class="contribution-grid-wrapper">
             <div class="contribution-grid-container">
                 <div class="weekday-labels">
+                    <span class="weekday-label">Sun</span>
                     <span class="weekday-label"></span>
-                    <span class="weekday-label">Mon</span>
+                    <span class="weekday-label">Tue</span>
                     <span class="weekday-label"></span>
-                    <span class="weekday-label">Wed</span>
+                    <span class="weekday-label">Thu</span>
                     <span class="weekday-label"></span>
-                    <span class="weekday-label">Fri</span>
-                    <span class="weekday-label"></span>
+                    <span class="weekday-label">Sat</span>
                 </div>
                 <div class="contribution-grid">
                     ${weeks.map(week => `
