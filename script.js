@@ -795,38 +795,21 @@ function renderActivityGraph(container, data) {
     
     // Group by weeks (starting Sunday)
     const weeks = [];
-    let currentWeek = [];
-    
-    // Find the first Sunday before the data starts
-    const firstDate = contributionData[0].date;
-    const dayOfWeek = firstDate.getDay();
-    
-    // Add empty cells for days before first date
-    for (let i = 0; i < dayOfWeek; i++) {
-        currentWeek.push(null);
-    }
+    let currentWeek = [null, null, null, null, null, null, null]; // 7 days
     
     contributionData.forEach(day => {
-        const dayIndex = day.date.getDay();
+        const dayIndex = day.date.getDay(); // 0 = Sunday, 6 = Saturday
+        currentWeek[dayIndex] = day;
         
-        // Start new week on Sunday
-        if (dayIndex === 0 && currentWeek.length > 0) {
-            // Fill remaining days of the week
-            while (currentWeek.length < 7) {
-                currentWeek.push(null);
-            }
+        // If it's Saturday (6), finish the week
+        if (dayIndex === 6) {
             weeks.push(currentWeek);
-            currentWeek = [];
+            currentWeek = [null, null, null, null, null, null, null];
         }
-        
-        currentWeek.push(day);
     });
     
-    // Add last week
-    if (currentWeek.length > 0) {
-        while (currentWeek.length < 7) {
-            currentWeek.push(null);
-        }
+    // Add the last incomplete week if it has any data
+    if (currentWeek.some(day => day !== null)) {
         weeks.push(currentWeek);
     }
     
