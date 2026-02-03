@@ -4,3 +4,4 @@
 *.key
 fetch-github.js
 node_modules/
+res/
